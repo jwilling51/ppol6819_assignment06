@@ -1,0 +1,8 @@
+---
+title: "Assignment 06"
+format: html
+embed-resources: true
+author: Sarah Krause, Miguel Villa, and Johnny Willing
+---
+
+## Exercise 02
