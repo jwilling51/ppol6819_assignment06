@@ -47,3 +47,6 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Data folder
+OHIE_Public_Use_Files/
