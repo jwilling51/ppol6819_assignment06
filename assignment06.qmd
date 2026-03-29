@@ -20,3 +20,23 @@ Finkelstein, A., Taubman, S., Wright, B., Bernstein, M., Gruber, J., Newhouse, J
 **Data source:**
 
 Finkelstein, A. (2013). Oregon health insurance experiment public use data \[Data set\]. National Bureau of Economic Research. https://www.nber.org/research/data/oregon-health-insurance-experiment-data
+
+## Exercise 03
+
+```{r}
+library(tidyverse)
+library(haven)
+library(here)
+
+baseline <- read_dta(here("OHIE_Public_Use_Files/OHIE_Data/oregonhie_descriptive_vars.dta"))
+oneyearfup <- read_dta(here("OHIE_Public_Use_Files/OHIE_Data/oregonhie_survey12m_vars.dta"))
+
+data <- baseline |>
+  left_join(oneyearfup, by = "person_id")
+
+colSums(is.na(data))
+```
+
+This data is tidy because each variable forms a column and each observation forms a row. Additionally, there is only one type of observational unit (a participant in the study), so there is just one dataframe.
+
+@Sarah and @Miguel: health_gen_bin_12m is the variable marking whether an individual's self-reported health is at least good (i.e. good, very good, or excellent) and usual_place_12m is the variable indicating whether an individual has a usual place they can go to receive medical care. 
