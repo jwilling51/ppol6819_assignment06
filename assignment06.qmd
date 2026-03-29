@@ -2,6 +2,9 @@
 title: "Assignment 06"
 format: html
 embed-resources: true
+execute: 
+  warning: false
+  message: false
 author: Sarah Krause, Miguel Villa, and Johnny Willing
 ---
 
@@ -30,9 +33,13 @@ library(here)
 
 baseline <- read_dta(here("OHIE_Public_Use_Files/OHIE_Data/oregonhie_descriptive_vars.dta"))
 oneyearfup <- read_dta(here("OHIE_Public_Use_Files/OHIE_Data/oregonhie_survey12m_vars.dta"))
+inperson <- read_dta(here("OHIE_Public_Use_Files/OHIE_Data/oregonhie_inperson_vars.dta"))
 
 data <- baseline |>
   left_join(oneyearfup, by = "person_id")
+
+data <- data |>
+  left_join(inperson, by = "person_id")
 
 colSums(is.na(data))
 ```
@@ -40,3 +47,42 @@ colSums(is.na(data))
 This data is tidy because each variable forms a column and each observation forms a row. Additionally, there is only one type of observational unit (a participant in the study), so there is just one dataframe.
 
 @Sarah and @Miguel: health_gen_bin_12m is the variable marking whether an individual's self-reported health is at least good (i.e. good, very good, or excellent) and usual_place_12m is the variable indicating whether an individual has a usual place they can go to receive medical care. 
+
+## Exercise 05
+
+```{r}
+data |>
+  select(treatment, age_inp, usual_place_12m) |>
+  mutate(treat_group = case_when(
+    treatment == 0 ~ "Control",
+    treatment == 1 ~ "Treatment"
+  )) |>
+  ggplot() + 
+  geom_smooth(mapping = aes(x = age_inp,
+                            y = usual_place_12m,
+                            color = treat_group),
+              method = "loess") + 
+  labs(title = "Probability of Having a Usual Place for Care by Age",
+      subtitle = "Oregan Health Insurance Experiment Lottery Winners vs. Losers",
+      x = "Age",
+      y = "Probability of Having a Usual Place for Care",
+      color = "Lottery Assignment",
+      caption = "Source: NBER OHIE Data") +
+  theme_minimal() + 
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        plot.caption = element_text(hjust = 0.5))
+
+```
+
+The visualization uses LOESS to show the relationship between participant age and their probability of having a usual place where they receive medical care at the 12-month follow-up for lottery winners and losers. It shows that as age increases for both those who won the lottery and those who didn't, the probability of having a usual place for care increases. Overall, the lottery winners have a higher probability than lottery losers at all ages. The gray band shows the 95% confidence interval for the smoothing estimate. It is important to note that the visualization only shows probabilities for participants who completed the 12-month follow-up survey, and non-response introduces some selection bias into the visualization. 
+
+
+
+
+
+
+
+
+
+
