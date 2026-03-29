@@ -50,3 +50,6 @@ rsconnect/
 
 # Data folder
 OHIE_Public_Use_Files/
+
+# ds_store
+.DS_Store
