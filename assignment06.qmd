@@ -12,7 +12,7 @@ author: Sarah Krause, Miguel Villa, and Johnny Willing
 
 The paper whose findings we intend to reanalyze is Finkelstein et al.'s (2012) "The Oregon health insurance experiment: Evidence from the first year," which has replication data and code publicly available from the National Bureau of Economic Research [here](https://www.nber.org/research/data/oregon-health-insurance-experiment-data). The paper assesses the outcomes of a randomized experiment in which Oregon households entered into a lottery to gain access to Medicaid. 89,924 individuals registered for the lottery, of which 35,169, representing 29,664 households, were selected. One year after the individuals in these households were made eligible to enroll, Finkelstein et al. surveyed them on their health and financial strain as well as accessed administrative data for further analyses. Because not all individuals in selected households ended up being eligible for Medicaid, and some others failed to apply, not all of the selected individuals participated in Medicaid. Finkelstein et al. produce both ITT and LATE estimates; for simplicity, our reanalysis uses one of the ITT estimates.
 
-@Sarah and @Miguel - which one do you want to do? I was thinking maybe self-reported health good/very good/excellent or has a usual place of clinic-based care (in tables IX and X). One concern - they do some reweighting based on the fact that some households had two individuals that entered the lottery, which increased their chance of being accepted. 
+@Sarah and @Miguel - which one do you want to do? I was thinking maybe self-reported health good/very good/excellent or has a usual place of clinic-based care (in tables IX and X). One concern - they do some reweighting based on the fact that some households had two individuals that entered the lottery, which increased their chance of being accepted.
 
 ### Citations for data source and paper
 
@@ -46,7 +46,7 @@ colSums(is.na(data))
 
 This data is tidy because each variable forms a column and each observation forms a row. Additionally, there is only one type of observational unit (a participant in the study), so there is just one dataframe.
 
-@Sarah and @Miguel: health_gen_bin_12m is the variable marking whether an individual's self-reported health is at least good (i.e. good, very good, or excellent) and usual_place_12m is the variable indicating whether an individual has a usual place they can go to receive medical care. 
+@Sarah and @Miguel: health_gen_bin_12m is the variable marking whether an individual's self-reported health is at least good (i.e. good, very good, or excellent) and usual_place_12m is the variable indicating whether an individual has a usual place they can go to receive medical care.
 
 ## Exercise 05
 
@@ -75,14 +75,85 @@ data |>
 
 ```
 
-The visualization uses LOESS to show the relationship between participant age and their probability of having a usual place where they receive medical care at the 12-month follow-up for lottery winners and losers. It shows that as age increases for both those who won the lottery and those who didn't, the probability of having a usual place for care increases. Overall, the lottery winners have a higher probability than lottery losers at all ages. The gray band shows the 95% confidence interval for the smoothing estimate. It is important to note that the visualization only shows probabilities for participants who completed the 12-month follow-up survey, and non-response introduces some selection bias into the visualization. 
+The visualization uses LOESS to show the relationship between participant age and their probability of having a usual place where they receive medical care at the 12-month follow-up for lottery winners and losers. It shows that as age increases for both those who won the lottery and those who didn't, the probability of having a usual place for care increases. Overall, the lottery winners have a higher probability than lottery losers at all ages. The gray band shows the 95% confidence interval for the smoothing estimate. It is important to note that the visualization only shows probabilities for participants who completed the 12-month follow-up survey, and non-response introduces some selection bias into the visualization.
 
+## Exercise 05
 
+The hypothesis test we are analyzing is a two sample t-test where we compare the estimated means on the probability of having access to a usual place for care for those in the control and treatment group. In this case the control group is lottery losers, and the treatment group are lottery winners. Given some, lottery winners did not subsequently qualify for treatment coverage or simply didn't follow up the estimate is an intent-to-treat estimate, ITT.
 
+The assumptions of the original parametric hypothesis test are:
 
+1.  $x_1,x_2,...,x_n$ is an IID random sample from population 1. $y_1,y_2,...,y_n$ is an IID random sample from population 2.
+2.  These populations are normally distributed or the sample size is large enough for CLT.
+3.  The populations have equal variances.
 
+The assumptions of the non-parametric permutation test are:
 
+1.  Observations are independent and treatment assignment is randomized (RCT).
+2.  Exchangeability under the null: If null that there is no treatment effect or difference between treatment and control groups is true, then the observed outcomes would be equally likely under any reassignment of groups.
 
+The main distinction is that a permutation test, does not require an underlying normal distribution (particularly useful with small sample sizes) and does not require equal variances between the control and treatment group. This a relaxing of two major assumptions of the original parametric test.
 
+**Hypothesis**
 
+The null and alternative hypotheses for the change in usual care access are as follows:
 
+$H_0: \mu_{control} = \mu_{treatment}$
+
+$H_a: \mu_{control} \ne \mu_{treatment}$
+
+**Subsetting Data**
+
+```{r}
+library(infer)
+
+# Subsetting data
+usual <- data |>
+  select(treatment, usual_place_12m) |>
+  # original estimates limited to 12 month survey respondents
+  filter(!is.na(usual_place_12m)) |>
+  mutate(treat_group = case_when(
+    treatment == 0 ~ "Control",
+    treatment == 1 ~ "Treatment")) |>
+  mutate(usual_place_12m = as.numeric(usual_place_12m))
+```
+
+Original Test Statistic: ITT of 0.099 of (P \< 0.0001).
+
+```{r}
+# calculate the test statistic
+point_estimate <- usual |>
+  specify(usual_place_12m ~ treat_group) |>
+  calculate(stat = "diff in means", order = c("Treatment", "Control"))
+
+point_estimate
+```
+
+We find an ITT of 0.06. Although not exactly the same this is because our ITT is unweighted unlike the paper's estimate.
+
+Now we use a permutation distribution to test a non-parametric two sample t-test of two means.
+
+```{r}
+# generate the permutation distribution
+perm_dist <- usual |>
+  specify(usual_place_12m ~ treat_group) |>
+  hypothesize(null = "independence") |>
+  generate(reps = 5000, type = "permute") |>
+  calculate(stat = "diff in means", order = c("Treatment", "Control"))
+
+# visualize the p-value
+perm_dist |>
+  visualize() +
+  shade_p_value(obs_stat = point_estimate, direction = "two-sided")
+
+```
+
+```{r}
+# calculate the p-value
+perm_dist |>
+  get_p_value(obs_stat = point_estimate, direction = "two-sided")
+```
+
+**Non-Parametric Results Interpretation**
+
+Just like in the original paper, there is sufficient evidence to reject the null hypothesis at the 95% confidence level. The mean change in access to usual health care coverage is statistically significantly different between lottery and non lottery winners. Thus, demonstrating a non-zero difference between treatment group members and their control group counterparts.
