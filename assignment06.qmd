@@ -75,11 +75,11 @@ data |>
 
 ```
 
-The visualization uses LOESS to show the relationship between participant age and their probability of having a usual place where they receive medical care at the 12-month follow-up for lottery winners and losers. It shows that as age increases for both those who won the lottery and those who didn't, the probability of having a usual place for care increases. Overall, the lottery winners have a higher probability than lottery losers at all ages. The gray band shows the 95% confidence interval for the smoothing estimate. It is important to note that the visualization only shows probabilities for participants who completed the 12-month follow-up survey, and non-response introduces some selection bias into the visualization.
+The visualization uses LOESS to show the relationship between participant age and their probability of having a usual place where they receive medical care at the 12-month follow-up for lottery winners and losers. It shows that as age increases for both those who won the lottery and those who didn't, the probability of having a usual place for care increases. Overall, the lottery winners have a higher probability than lottery losers at all ages. The gray band shows the 95% confidence interval for the smoothing estimates. There is substantial overlap of the gray bands throughout the age range, suggesting that there is some uncertainty around the true difference between the lottery winners and losers. However, overall the graph shows some visual evidence that winning the lottery may be positively correlated with having a higher probability of having a usual place for medical care. It is important to note that the visualization only shows probabilities for participants who completed the 12-month follow-up survey, and non-response introduces some selection bias into the visualization.
 
-## Exercise 05
+## Exercise 06
 
-The hypothesis test we are analyzing is a two sample t-test where we compare the estimated means on the probability of having access to a usual place for care for those in the control and treatment group. In this case the control group is lottery losers, and the treatment group are lottery winners. Given some, lottery winners did not subsequently qualify for treatment coverage or simply didn't follow up the estimate is an intent-to-treat estimate, ITT.
+The hypothesis test we are analyzing is a two sample t-test where we compare the estimated means on the probability of having access to a usual place for care for those in the control and treatment group. In this case the control group is lottery losers, and the treatment group is lottery winners. Given that some lottery winners did not subsequently qualify for treatment coverage or simply didn't follow up, the estimate is an intent-to-treat estimate, ITT.
 
 The assumptions of the original parametric hypothesis test are:
 
@@ -90,7 +90,7 @@ The assumptions of the original parametric hypothesis test are:
 The assumptions of the non-parametric permutation test are:
 
 1.  Observations are independent and treatment assignment is randomized (RCT).
-2.  Exchangeability under the null: If null that there is no treatment effect or difference between treatment and control groups is true, then the observed outcomes would be equally likely under any reassignment of groups.
+2.  Exchangeability under the null: If the null hypothesis that there is no treatment effect or difference between treatment and control groups is true, then the observed outcomes would be equally likely under any reassignment of groups.
 
 The main distinction is that a permutation test, does not require an underlying normal distribution (particularly useful with small sample sizes) and does not require equal variances between the control and treatment group. This a relaxing of two major assumptions of the original parametric test.
 
@@ -156,4 +156,4 @@ perm_dist |>
 
 **Non-Parametric Results Interpretation**
 
-Just like in the original paper, there is sufficient evidence to reject the null hypothesis at the 95% confidence level. The mean change in access to usual health care coverage is statistically significantly different between lottery and non lottery winners. Thus, demonstrating a non-zero difference between treatment group members and their control group counterparts.
+Just like in the original paper, there is sufficient evidence to reject the null hypothesis at the 95% confidence level. The mean change in access to a place of usual care is statistically significantly different between lottery winners and losers, demonstrating a non-zero difference between treatment group members and their control group counterparts.
